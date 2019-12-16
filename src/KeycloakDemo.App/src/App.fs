@@ -9,9 +9,7 @@ open Thoth.Json
 open Fetch
 
 // => Authentication - KEYCLOAK ============================================================================================
-let aad_clientID  = "<CLIENT ID>"
-let aad_authority = "https://login.microsoftonline.com/<TENANT ID>"
-let aad_replyUrl  = "https://localhost:1010/"
+let initKeycloak() = Fable.Core.JsInterop.importMember "./KeycloakScript.js"
 
 // => App Types ========================================================================================================
 type AppModel = 
@@ -22,12 +20,17 @@ type AppModel =
       nameFromAPI = "" }
 
 type Msg =
+  | InitKeycloak
   | Login
   | Logout
 
 // => App State ========================================================================================================
 let update msg model =
   match msg with
+  | InitKeycloak ->
+    initKeycloak()
+    model, []
+
   | Login ->  
     model, []
 
@@ -35,7 +38,7 @@ let update msg model =
     model, []
   
 let init _ = 
- AppModel.Empty, []
+ AppModel.Empty, InitKeycloak |> Cmd.ofMsg
 
 // => View to render ===================================================================================================
 let appView model dispatch =
