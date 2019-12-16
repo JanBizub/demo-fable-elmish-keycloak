@@ -1,0 +1,24 @@
+source https://api.nuget.org/v3/index.json
+
+nuget FSharp.Core                           4.7.0
+
+group AspNetCore
+    source https://www.nuget.org/api/v2
+    nuget Fable.JsonConverter
+    nuget Microsoft.AspNetCore
+    nuget Microsoft.AspNetCore.Mvc
+	nuget Microsoft.AspNetCore.Authentication.AzureAD.UI
+
+group Fable
+    source https://www.nuget.org/api/v2
+    nuget Fable.Core                        3.1.3
+    nuget Fable.React                       5.3.5
+    nuget Fable.Promise                     2.0.0
+    nuget Fable.Fetch                       2.1.0
+    nuget Fable.Elmish                      3.0.6
+    nuget Fable.Elmish.React                3.0.1
+    nuget Fable.Elmish.Browser              3.0.2
+    nuget Fable.Elmish.Debugger             3.0.3
+    nuget Fable.Elmish.HMR                  4.0.1
+    nuget Thoth.Json                        3.1.0
+	nuget Thoth.Fetch                       1.0.0
