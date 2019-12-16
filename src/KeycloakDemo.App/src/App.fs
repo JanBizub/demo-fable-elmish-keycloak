@@ -9,7 +9,8 @@ open Thoth.Json
 open Fetch
 
 // => Authentication - KEYCLOAK ============================================================================================
-let initKeycloak() = Fable.Core.JsInterop.importMember "./KeycloakScript.js"
+let initKeycloak()       = Fable.Core.JsInterop.importMember "./KeycloakScript.js"
+let getToken() : string  = Fable.Core.JsInterop.importMember "./KeycloakScript.js"
 
 // => App Types ========================================================================================================
 type AppModel = 
@@ -23,6 +24,22 @@ type Msg =
   | InitKeycloak
   | Login
   | Logout
+  | RequestNameFromAPI
+  | ReceiveNameFromAPI of string
+  | RestError of exn
+
+// http://localhost:5000/car
+
+module REST =
+  let apiUrl = "http://localhost:51776/car"
+  
+  let loadCarNames () =
+    let request () = promise {
+      let! r = fetch apiUrl [requestHeaders [(Authorization (sprintf "Bearer %s" (getToken()) ))]] 
+      let! t = r.text()
+      return Decode.Auto.unsafeFromString<string> t
+    }
+    Cmd.OfPromise.either request () ReceiveNameFromAPI RestError
 
 // => App State ========================================================================================================
 let update msg model =
@@ -36,6 +53,15 @@ let update msg model =
 
   | Logout ->
     model, []
+
+  | RequestNameFromAPI ->
+    model, REST.loadCarNames ()
+   
+  | ReceiveNameFromAPI nameFromAPI ->
+    {model with nameFromAPI = nameFromAPI}, []
+
+  | RestError error ->
+    model, []
   
 let init _ = 
  AppModel.Empty, InitKeycloak |> Cmd.ofMsg
@@ -45,7 +71,10 @@ let appView model dispatch =
   div [] [
     hr []
     h1 [] [str "Keycloak Demo App"]
+    p  [] [(sprintf "name from API is: %s" model.nameFromAPI) |> str]
     hr []
+    button [OnClick ( fun _ -> printf "token: %s" (getToken()) )] ["Get Token" |> str]
+    button [OnClick ( fun _ -> RequestNameFromAPI |> dispatch)] ["Get Name from API" |> str]
     hr [] ]
 
 Program.mkProgram init update appView

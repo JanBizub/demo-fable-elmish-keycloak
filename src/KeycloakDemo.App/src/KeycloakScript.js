@@ -9,4 +9,13 @@
     }).catch(function () {
         console.log('failed to initialize');
     });
+
+    document.kci = keycloak;
+
+    return keycloak;
 };
+
+export var getToken = () => {
+    return document.kci.token;
+};
+        
