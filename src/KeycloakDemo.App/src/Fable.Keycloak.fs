@@ -147,7 +147,7 @@ type KeycloakInitOptions = {
   }
 
 type KeycloakLoginPrompt =
-  | [<CompiledName "none">] None
+  | [<CompiledName "none">] Nothing
   | [<CompiledName "login">] Login
   
 type KeycloakLoginAction =
