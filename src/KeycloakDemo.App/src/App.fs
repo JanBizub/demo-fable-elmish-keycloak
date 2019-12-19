@@ -21,14 +21,14 @@ type AppModel =
   isUiLoading       : bool
   keyCloakInstance  : Keycloak
   }
-  static member Empty = { 
-    isUiLoading      = false
-    keyCloakInstance = KeyCloak.create ({
-      url      = Some "http://localhost:8080/auth"
-      realm    = "demo"
-      clientId = "fable-react-client"
-    })
-  }
+  static member Empty = 
+    let kcConfig = JsInterop.createEmpty<KeycloakConfig>
+    kcConfig.url      <- Some "http://localhost:8080/auth"
+    kcConfig.realm    <- "demo"
+    kcConfig.clientId <- "fable-react-client"
+
+    { isUiLoading      = false
+      keyCloakInstance = kcConfig |> Keycloak.create }
 
 type Msg =
   | InitKeycloak
@@ -50,30 +50,18 @@ module REST =
   //  }
   //  Cmd.OfPromise.either request () ReceiveNameFromAPI RestError
 
-let keyCloakInitOptions = {
-  useNonce                  = None
-  adapter                   = None
-  onLoad                    = Some LoginRequired
-  token                     = None
-  refreshToken              = None
-  idToken                   = None
-  timeSkew                  = None
-  checkLoginIframe          = None
-  checkLoginIframeInterval  = None
-  responseMode              = None
-  redirectUri               = None
-  silentCheckSsoRedirectUri = None
-  flow                      = None
-  promiseType               = Some Native
-  pkceMethod                = None
-  enableLogging             = None
-}
 
 // => App State ========================================================================================================
 let update msg (model: AppModel) =
   match msg with
   | InitKeycloak ->
-    model.keyCloakInstance.init (keyCloakInitOptions) |> ignore
+    let keyCloakInitOptions         = JsInterop.createEmpty<KeycloakInitOptions>
+    keyCloakInitOptions.onLoad      <- Some LoginRequired
+    keyCloakInitOptions.promiseType <- Some Native
+
+    keyCloakInitOptions 
+    |> model.keyCloakInstance.init 
+    |> ignore
 
     model, []
 
