@@ -19,15 +19,16 @@ open Fable.Core
 type AppModel = 
   { 
   isUiLoading       : bool
-  nameFromAPI       : string
   keyCloakInstance  : Keycloak
   }
-  static member Empty =
-    { 
+  static member Empty = { 
     isUiLoading      = false
-    nameFromAPI      = ""
-    keyCloakInstance = createKeyCloak ()
-    }
+    keyCloakInstance = KeyCloak.create ({
+      url      = Some "http://localhost:8080/auth"
+      realm    = "demo"
+      clientId = "fable-react-client"
+    })
+  }
 
 type Msg =
   | InitKeycloak
@@ -52,7 +53,10 @@ module REST =
 let update msg (model: AppModel) =
   match msg with
   | InitKeycloak ->
-    model.keyCloakInstance.init ({onLoad = Some LoginRequired; promiseType = Some Native }) |> ignore
+    model.keyCloakInstance.init ({
+      onLoad      = Some LoginRequired
+      promiseType = Some Native
+    }) |> ignore
 
     model, []
 
@@ -69,7 +73,7 @@ let update msg (model: AppModel) =
     model, []
    
   | ReceiveNameFromAPI nameFromAPI ->
-    {model with nameFromAPI = nameFromAPI}, []
+    model, []
 
   | RestError error ->
     model, []
@@ -82,7 +86,6 @@ let appView model dispatch =
   div [] [
     hr []
     h1 [] [str "Keycloak Demo App"]
-    p  [] [(sprintf "name from API is: %s" model.nameFromAPI) |> str]
     hr []
     button [OnClick ( fun _ -> RequestNameFromAPI |> dispatch)] ["Get Token" |> str]
     hr [] ]
