@@ -19,17 +19,15 @@ type Startup private () =
     IdentityModelEventSource.ShowPII <- true;
     
     services.AddCors(
-      fun p -> p.AddPolicy(
-                  name = "AllowAllCors",
-                  configurePolicy = fun builder ->
-                    builder
-                     .AllowAnyOrigin()
-                     .AllowAnyMethod()
-                     .AllowAnyHeader() |> ignore)) |> ignore
+      fun p -> 
+        p.AddPolicy(
+          name = "AllowAllCors",
+          configurePolicy = fun builder ->
+            builder
+             .AllowAnyOrigin()
+             .AllowAnyMethod()
+             .AllowAnyHeader() |> ignore)) |> ignore
     
-    let tokenValidationParameters = TokenValidationParameters()
-    tokenValidationParameters.ValidAudiences <- [|"account"|]
-
     services
       .AddAuthentication(fun o ->
       o.DefaultAuthenticateScheme <- JwtBearerDefaults.AuthenticationScheme
@@ -40,7 +38,7 @@ type Startup private () =
       o.Audience                  <- "fable-react-client"
       // remove when on ssl!
       o.RequireHttpsMetadata      <- false
-      o.TokenValidationParameters <- tokenValidationParameters
+      o.TokenValidationParameters <- TokenValidationParameters (ValidAudiences = [|"account"|])
       ) 
       |> ignore
     
@@ -61,3 +59,4 @@ type Startup private () =
         ) |> ignore
     
   member val Configuration : IConfiguration = null with get, set
+

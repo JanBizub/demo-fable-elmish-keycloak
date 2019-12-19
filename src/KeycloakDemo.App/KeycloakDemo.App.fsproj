@@ -11,6 +11,8 @@
     <Content Include="package.json" />
     <Content Include="webpack.config.js" />
     <Content Include="scss\main.scss" />
+    <None Include="src\keycloak.d.ts" />
+    <Compile Include="src\Fable.Keycloak.fs" />
     <None Include="src\KeycloakScript.js" />
     
     <Compile Include="src\App.fs" />

@@ -3,22 +3,31 @@ open Elmish
 open Elmish.Navigation
 open Elmish.React
 open Elmish.Debug
+open Fable
 open Fable.React
 open Fable.React.Props
 open Thoth.Json
 open Fetch
+open Fable.Keycloak
+open Fable.Core
 
 // => Authentication - KEYCLOAK ============================================================================================
-let initKeycloak()       = Fable.Core.JsInterop.importMember "./KeycloakScript.js"
-let getToken() : string  = Fable.Core.JsInterop.importMember "./KeycloakScript.js"
+//let initKeycloak()       = Fable.Core.JsInterop.importMember "./KeycloakScript.js"
+//let getToken() : string  = Fable.Core.JsInterop.importMember "./KeycloakScript.js"
 
 // => App Types ========================================================================================================
 type AppModel = 
-  { isUiLoading : bool
-    nameFromAPI : string }
+  { 
+  isUiLoading       : bool
+  nameFromAPI       : string
+  keyCloakInstance  : Keycloak
+  }
   static member Empty =
-    { isUiLoading = false
-      nameFromAPI = "" }
+    { 
+    isUiLoading      = false
+    nameFromAPI      = ""
+    keyCloakInstance = createKeyCloak ()
+    }
 
 type Msg =
   | InitKeycloak
@@ -28,24 +37,23 @@ type Msg =
   | ReceiveNameFromAPI of string
   | RestError of exn
 
-// http://localhost:5000/car
-
 module REST =
   let apiUrl = "http://localhost:51776/car"
   
-  let loadCarNames () =
-    let request () = promise {
-      let! r = fetch apiUrl [requestHeaders [(Authorization (sprintf "Bearer %s" (getToken()) ))]] 
-      let! t = r.text()
-      return Decode.Auto.unsafeFromString<string> t
-    }
-    Cmd.OfPromise.either request () ReceiveNameFromAPI RestError
+  //let loadCarNames () =
+  //  let request () = promise {
+  //    let! r = fetch apiUrl [requestHeaders [(Authorization (sprintf "Bearer %s" (getToken()) ))]] 
+  //    let! t = r.text()
+  //    return Decode.Auto.unsafeFromString<string> t
+  //  }
+  //  Cmd.OfPromise.either request () ReceiveNameFromAPI RestError
 
 // => App State ========================================================================================================
-let update msg model =
+let update msg (model: AppModel) =
   match msg with
   | InitKeycloak ->
-    initKeycloak()
+    model.keyCloakInstance.init ({onLoad = Some LoginRequired; promiseType = Some Native }) |> ignore
+
     model, []
 
   | Login ->  
@@ -55,7 +63,10 @@ let update msg model =
     model, []
 
   | RequestNameFromAPI ->
-    model, REST.loadCarNames ()
+    let token = model.keyCloakInstance.token
+    printfn "%s" token
+    
+    model, []
    
   | ReceiveNameFromAPI nameFromAPI ->
     {model with nameFromAPI = nameFromAPI}, []
@@ -73,8 +84,7 @@ let appView model dispatch =
     h1 [] [str "Keycloak Demo App"]
     p  [] [(sprintf "name from API is: %s" model.nameFromAPI) |> str]
     hr []
-    button [OnClick ( fun _ -> printf "token: %s" (getToken()) )] ["Get Token" |> str]
-    button [OnClick ( fun _ -> RequestNameFromAPI |> dispatch)] ["Get Name from API" |> str]
+    button [OnClick ( fun _ -> RequestNameFromAPI |> dispatch)] ["Get Token" |> str]
     hr [] ]
 
 Program.mkProgram init update appView
