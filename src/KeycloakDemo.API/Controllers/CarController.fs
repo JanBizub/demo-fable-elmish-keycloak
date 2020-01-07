@@ -7,7 +7,7 @@ open Microsoft.AspNetCore.Cors
 [<Authorize>]
 [<EnableCors("AllowAllCors")>]
 [<Route("[controller]")>]
-type CarController () =
+type CarController() =
     inherit ControllerBase()
 
     [<HttpGet>]
