@@ -1,3 +1,3 @@
-# demo-fable-elmish-msal
+# demo-fable-elmish-keycloak
 
 # Backend and installation
